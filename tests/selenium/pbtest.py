@@ -8,6 +8,7 @@ import time
 from functools import wraps
 
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -148,7 +149,12 @@ class Shim:
         caps = DesiredCapabilities.CHROME.copy()
         caps['loggingPrefs'] = {'browser': 'ALL'}
 
-        driver = webdriver.Chrome(chrome_options=opts, desired_capabilities=caps)
+        try:
+            driver = webdriver.Chrome(chrome_options=opts, desired_capabilities=caps)
+        except WebDriverException as e:
+            print("Chrome WebDriver initialization failed, will retry:" + str(e))
+            driver = webdriver.Chrome(chrome_options=opts, desired_capabilities=caps)
+
         try:
             yield driver
         finally:
